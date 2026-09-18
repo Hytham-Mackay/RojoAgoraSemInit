@@ -1,9 +1,7 @@
 local Initializer = {}
 
-function init.init()
-
+function Initializer.init()
 	for _, child in ipairs(script.Parent.active:GetChildren()) do
-
 		if child:IsA("ModuleScript") and child.name ~= "Initializer" then
 			print(child)
 
@@ -16,7 +14,6 @@ function init.init()
 			end
 		end
 	end
-
 end
 
 return Initializer

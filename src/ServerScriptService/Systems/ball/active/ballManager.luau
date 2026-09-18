@@ -26,11 +26,10 @@ function ballManager.new(ball)
 		WallBounceFactor = 0.85,
 	}
 
-
 	self.FallConfig = {
-		Gravity = 45,               -- cai devagar
-		BounceDamping = 0.90,       -- QUICA ALTO (antes 0.82)
-		GroundFriction = 0.965,       -- desliza bastante
+		Gravity = 45, -- cai devagar
+		BounceDamping = 0.90, -- QUICA ALTO (antes 0.82)
+		GroundFriction = 0.965, -- desliza bastante
 		AirResistance = 0.998,
 	}
 
@@ -130,11 +129,7 @@ function ballManager:ThrowSuccess(player, chargeTime, target)
 	self.Holder = nil
 	self.ball.Anchored = true
 
-	self.ball.Position = Vector3.new(
-		self.ball.Position.X,
-		flightY,
-		self.ball.Position.Z
-	)
+	self.ball.Position = Vector3.new(self.ball.Position.X, flightY, self.ball.Position.Z)
 
 	self:SetState("Flying")
 
@@ -176,7 +171,6 @@ function ballManager:GetBallRadius()
 	return math.min(self.ball.Size.X, self.ball.Size.Y, self.ball.Size.Z) / 2
 end
 
-
 -- Voo horizontal
 
 function ballManager:UpdateFlight(dt)
@@ -198,12 +192,8 @@ function ballManager:UpdateFlight(dt)
 		return
 	end
 
-	local result = workspace:Spherecast(
-		self.ball.Position,
-		self:GetBallRadius(),
-		displacement,
-		self.FlightRaycastParams
-	)
+	local result =
+		workspace:Spherecast(self.ball.Position, self:GetBallRadius(), displacement, self.FlightRaycastParams)
 
 	if result then
 		self:OnFlightHit(result)
@@ -215,6 +205,15 @@ function ballManager:UpdateFlight(dt)
 end
 
 function ballManager:OnFlightHit(result)
+	local hitPart = result.Instance
+	local character = hitPart:FindFirstAncestorOfClass("Model")
+
+	if character and character:FindFirstChildOfClass("Humanoid") then
+		print("HIT PLAYER:", character.Name)
+	else
+		print("Atingiu:", hitPart.Name)
+	end
+
 	print("Bola atingiu:", result.Instance.Name)
 
 	local normal = result.Normal
@@ -267,18 +266,13 @@ function ballManager:UpdateFalling(dt)
 	-- Resistência no ar mínima
 	fall.HorizontalVelocity *= fall.AirResistance
 
-	local velocity = Vector3.new(
-		fall.HorizontalVelocity.X,
-		fall.VerticalVelocity,
-		fall.HorizontalVelocity.Z
-	)
+	local velocity = Vector3.new(fall.HorizontalVelocity.X, fall.VerticalVelocity, fall.HorizontalVelocity.Z)
 
 	local displacement = velocity * dt
 	local nextPosition = self.ball.Position + displacement
 
-	
 	-- Detecção do chão
-	
+
 	local groundY = self:GetGroundYAtPosition(self.ball.Position)
 
 	if groundY then
@@ -287,23 +281,16 @@ function ballManager:UpdateFalling(dt)
 
 		if nextBallBottomY <= groundY then
 			-- Posiciona no chão
-			self.ball.Position = Vector3.new(
-				nextPosition.X,
-				groundY + ballRadius,
-				nextPosition.Z
-			)
+			self.ball.Position = Vector3.new(nextPosition.X, groundY + ballRadius, nextPosition.Z)
 			fall.Position = self.ball.Position
 
-			
 			-- QUICADA: inverte e aplica damping
-			
+
 			fall.VerticalVelocity = math.abs(fall.VerticalVelocity) * fall.BounceDamping
 			fall.HorizontalVelocity *= fall.GroundFriction
 
-			print("[ballManager] QUICOU! VY:", fall.VerticalVelocity,
-				"| HY:", fall.HorizontalVelocity.Magnitude)
+			print("[ballManager] QUICOU! VY:", fall.VerticalVelocity, "| HY:", fall.HorizontalVelocity.Magnitude)
 
-	
 			if math.abs(fall.VerticalVelocity) < 3 then
 				fall.VerticalVelocity = 0
 				self:StartRolling(fall.HorizontalVelocity)
@@ -314,9 +301,8 @@ function ballManager:UpdateFalling(dt)
 		end
 	end
 
-	
 	-- Detectação de parede
-	
+
 	local horizontalDisplacement = Vector3.new(displacement.X, 0, displacement.Z)
 
 	if horizontalDisplacement.Magnitude > 0.01 then
@@ -331,16 +317,14 @@ function ballManager:UpdateFalling(dt)
 			local normal = result.Normal
 
 			if normal.Y <= 0.7 then
-				local reflected = fall.HorizontalVelocity
-				- 2 * fall.HorizontalVelocity:Dot(normal) * normal
+				local reflected = fall.HorizontalVelocity - 2 * fall.HorizontalVelocity:Dot(normal) * normal
 
 				reflected = Vector3.new(reflected.X, 0, reflected.Z)
 				reflected *= self.Physics.WallBounceFactor
 
 				fall.HorizontalVelocity = reflected
 
-				self.ball.Position = result.Position
-					+ normal * (self:GetBallRadius() + 0.05)
+				self.ball.Position = result.Position + normal * (self:GetBallRadius() + 0.05)
 
 				fall.Position = self.ball.Position
 				return
@@ -359,7 +343,6 @@ function ballManager:UpdateFalling(dt)
 		self.Fall = nil
 	end
 end
-
 
 -- Rolamento
 
@@ -382,18 +365,10 @@ function ballManager:UpdateRolling(dt)
 
 	roll.Velocity *= roll.Friction
 
-	local displacement = Vector3.new(
-		roll.Velocity.X * dt,
-		0,
-		roll.Velocity.Z * dt
-	)
+	local displacement = Vector3.new(roll.Velocity.X * dt, 0, roll.Velocity.Z * dt)
 
-	local result = workspace:Spherecast(
-		self.ball.Position,
-		self:GetBallRadius(),
-		displacement,
-		self.FlightRaycastParams
-	)
+	local result =
+		workspace:Spherecast(self.ball.Position, self:GetBallRadius(), displacement, self.FlightRaycastParams)
 
 	if result then
 		local normal = result.Normal
@@ -409,11 +384,7 @@ function ballManager:UpdateRolling(dt)
 
 	local groundY = self:GetGroundYAtPosition(self.ball.Position)
 	if groundY then
-		self.ball.Position = Vector3.new(
-			self.ball.Position.X,
-			groundY + self:GetBallRadius(),
-			self.ball.Position.Z
-		)
+		self.ball.Position = Vector3.new(self.ball.Position.X, groundY + self:GetBallRadius(), self.ball.Position.Z)
 	end
 
 	if roll.Velocity.Magnitude < roll.StopThreshold then

@@ -602,7 +602,7 @@ function Network.SetDebug(enabled: boolean)
 	CONFIG.DEBUG = enabled
 end
 
--- Excluir Eventos, remotes e etc
+-- Excluir Eventos, remotes e etc, não é útil e pode ser removido da versão final
 
 -- até mourant resolver isso em uma function só, isso vai ficar separado
 
