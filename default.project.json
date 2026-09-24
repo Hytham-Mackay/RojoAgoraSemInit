@@ -33,6 +33,83 @@
         "CharacterBreakJointsOnDeath": false,
         "CharacterUseJumpPower": false
       }
+    },
+    "Workspace": {
+      "$className": "Workspace",
+      "$properties": {
+        "AutoSimulate": {
+          "Bool": true
+        },
+        "ExpandedTerrain": {
+          "Enum": 0
+        },
+        "GravityDirection": {
+          "Vector3": [
+            0.0,
+            -1.0,
+            0.0
+          ]
+        },
+        "MapTVRemoteToGamepadKeycodes": {
+          "Enum": 0
+        },
+        "PredictiveStreamingMode": {
+          "Enum": 0
+        },
+        "SignalBehavior": "Deferred",
+        "SimulationRate": {
+          "Float32": 1.0
+        },
+        "StreamOutBehavior": "Opportunistic",
+        "StreamingAdaptiveRadius": {
+          "Bool": false
+        },
+        "StreamingEnabled": true,
+        "StreamingIntegrityMode": "PauseOutsideLoadedArea",
+        "UseInputSink": {
+          "Enum": 0
+        },
+        "Wind": {
+          "Float32": 0.0
+        },
+        "WindDirection": {
+          "Vector3": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "WorldPivotData": {
+          "OptionalCFrame": {
+            "position": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "orientation": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ]
+          }
+        }
+      },
+      "$attributes": {
+        "Rojo_Target_CurrentCamera": "32dd6557e7f35ec30a5ee21f000003b8"
+      },
+      "$path": "src/Workspace"
     }
   }
 }
