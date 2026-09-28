@@ -1,4 +1,4 @@
-local ballManager = require(script.Parent.ballManager)
+local ballManager = require(script.Parent.BallManager)
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Network = require(ReplicatedStorage:WaitForChild("Network"))

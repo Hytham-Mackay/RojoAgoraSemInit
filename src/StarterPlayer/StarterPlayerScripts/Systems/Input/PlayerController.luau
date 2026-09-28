@@ -1,7 +1,7 @@
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local mouseSegment = require(script.Parent.Parent.Parent.CameraSystem.active.mouseSegment)
+local mouseSegment = require(script.Parent.Parent.Camera.MouseController)
 
 local Network = require(ReplicatedStorage:WaitForChild("Network"))
 

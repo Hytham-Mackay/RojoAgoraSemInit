@@ -1,3 +1,0 @@
-local ballInit = {}
-
-return ballInit
