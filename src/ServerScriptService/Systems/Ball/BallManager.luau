@@ -1,3 +1,4 @@
+local StateMachine = require(script.Parent.Parent.Libs.StateMachine)
 local Pickup = require(script.Parent.Pickup)
 local Throw = require(script.Parent.Throw)
 
@@ -10,7 +11,44 @@ function ballManager.new(ball)
 	local self = setmetatable({}, ballManager)
 
 	self.ball = ball
-	self.State = "Free"
+
+	self.FSM = StateMachine.new()
+	self.FSM:DefineStates({
+		{
+			Name = "Free",
+			From = { "Flying", "Falling", "Rolling" },
+			Started = function()
+				self.ball.Anchored = true
+				self.ball.ProximityPrompt.Enabled = true
+			end,
+			Exited = function()
+				self.ball.ProximityPrompt.Enabled = false
+			end,
+		},
+		{ Name = "Held", From = { "Free" } },
+		{
+			Name = "Flying",
+			From = { "Held" },
+			Update = function(dt)
+				self:UpdateFlight(dt)
+			end,
+		},
+		{
+			Name = "Falling",
+			From = { "Flying" },
+			Update = function(dt)
+				self:UpdateFalling(dt)
+			end,
+		},
+		{
+			Name = "Rolling",
+			From = { "Falling" },
+			Update = function(dt)
+				self:UpdateRolling(dt)
+			end,
+		},
+	})
+
 	self.Holder = nil
 	self.weld = nil
 
@@ -55,7 +93,7 @@ function ballManager:ConnectEvents()
 end
 
 function ballManager:CanPickup()
-	return self.State == "Free"
+	return self.FSM:Is("Free")
 end
 
 function ballManager:Pickup(player)
@@ -63,14 +101,17 @@ function ballManager:Pickup(player)
 end
 
 function ballManager:PickupSuccess(player)
-	self:SetHolder(player)
-	self:SetState("Held")
-	self.ball.Anchored = false
-
 	local character = player.Character
 	if not character then
 		return false
 	end
+
+	if not self:SetState("Held") then
+		return false
+	end
+
+	self:SetHolder(player)
+	self.ball.Anchored = false
 
 	local hand = character:WaitForChild("RightHand")
 	self.ball.CFrame = hand.CFrame
@@ -86,7 +127,7 @@ function ballManager:PickupSuccess(player)
 end
 
 function ballManager:CanThrow(player)
-	return self.Holder == player and self.State == "Held"
+	return self.Holder == player and self.FSM:Is("Held")
 end
 
 function ballManager:ThrowRequest(player, chargeTime, target)
@@ -412,22 +453,19 @@ function ballManager:GetGroundYAtPosition(position)
 end
 
 function ballManager:SetState(state)
-	self.State = state
-	self.ball.ProximityPrompt.Enabled = (state == "Free")
+	local ok = self.FSM:Goto(state)
+	if not ok then
+		warn("[ballManager] transição recusada:", self.FSM.CurrentState, "->", state)
+	end
+	return ok
+end
+
+function ballManager:updateState(dt)
+	self.FSM:Update(dt)
 end
 
 function ballManager:SetHolder(player)
 	self.Holder = player
-end
-
-function ballManager:updateState(dt)
-	if self.State == "Flying" then
-		self:UpdateFlight(dt)
-	elseif self.State == "Falling" then
-		self:UpdateFalling(dt)
-	elseif self.State == "Rolling" then
-		self:UpdateRolling(dt)
-	end
 end
 
 return ballManager

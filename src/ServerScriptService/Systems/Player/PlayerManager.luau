@@ -1,4 +1,4 @@
-local StateMachine = require(script.Parent.StateMachine)
+local StateMachine = require(script.Parent.Parent.Libs.StateMachine)
 local PlayerStates = require(script.Parent.PlayerStates)
 
 local PlayerManager = {}
@@ -22,19 +22,16 @@ local function GetCurrentMoveDirection(humanoid, root)
 end
 
 function PlayerManager.new(player)
-
 	local self = setmetatable({
-		Player = player;
-		Invulnerable = false;
-		DashDirection = Vector3.zero;
-		FSM = StateMachine.new();
-		_DashAttachment = nil;
-		_DashVelocity = nil;
+		Player = player,
+		Invulnerable = false,
+		DashDirection = Vector3.zero,
+		FSM = StateMachine.new(),
+		_DashAttachment = nil,
+		_DashVelocity = nil,
 	}, PlayerManager)
 
-	self.FSM:DefineStates(
-		PlayerStates.Create(player, self)
-	)
+	self.FSM:DefineStates(PlayerStates.Create(player, self))
 
 	return self
 end
@@ -48,7 +45,6 @@ function PlayerManager:IsDashing()
 end
 
 function PlayerManager:RequestDash()
-
 	local character = self.Player.Character
 	if not character then
 		return
@@ -69,16 +65,12 @@ function PlayerManager:RequestDash()
 		return
 	end
 
-	self.DashDirection = GetCurrentMoveDirection(
-		humanoid,
-		root
-	)
+	self.DashDirection = GetCurrentMoveDirection(humanoid, root)
 
 	self.FSM:Goto("Dashing")
 end
 
 function PlayerManager:ApplyDashImpulse(distance, duration)
-
 	local character = self.Player.Character
 	if not character then
 		return
@@ -109,7 +101,6 @@ function PlayerManager:ApplyDashImpulse(distance, duration)
 end
 
 function PlayerManager:ClearDashImpulse()
-
 	if self._DashVelocity then
 		self._DashVelocity:Destroy()
 		self._DashVelocity = nil
