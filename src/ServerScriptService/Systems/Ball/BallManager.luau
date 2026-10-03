@@ -1,11 +1,30 @@
 local StateMachine = require(script.Parent.Parent.Libs.StateMachine)
 local Pickup = require(script.Parent.Pickup)
 local Throw = require(script.Parent.Throw)
+local CollectionService = game:GetService("CollectionService")
 
 local ballManager = {}
 ballManager.__index = ballManager
 
 local FLIGHT_HEIGHT = 2.5
+
+local BOUNDS_TAG = "ArenaBounds"
+local CENTER_TAG = "ArenaCenter"
+
+local tagCache = {}
+local function getTagged(tag)
+	local cached = tagCache[tag]
+	if cached and cached.Parent then
+		return cached
+	end
+
+	local part = CollectionService:GetTagged(tag)[1]
+	if part and part:IsA("BasePart") then
+		tagCache[tag] = part
+		return part
+	end
+	return nil
+end
 
 function ballManager.new(ball)
 	local self = setmetatable({}, ballManager)
@@ -212,6 +231,42 @@ function ballManager:GetBallRadius()
 	return math.min(self.ball.Size.X, self.ball.Size.Y, self.ball.Size.Z) / 2
 end
 
+function ballManager:IsInMotion()
+	return self.FSM:Is("Flying") or self.FSM:Is("Falling") or self.FSM:Is("Rolling")
+end
+
+function ballManager:IsOutOfBounds(position)
+	local bounds = getTagged(BOUNDS_TAG)
+	if not bounds then
+		return false
+	end
+	local localPos = bounds.CFrame:PointToObjectSpace(position)
+	local half = bounds.Size / 2
+	return math.abs(localPos.X) > half.X or math.abs(localPos.Y) > half.Y or math.abs(localPos.Z) > half.Z
+end
+
+function ballManager:ResetToArena(reason)
+	if not self:IsInMotion() then
+		return false -- bola Held ou já Free nunca é resetada
+	end
+
+	local center = getTagged(CENTER_TAG)
+	if not center then
+		warn("[ballManager] nenhuma peça com a tag " .. CENTER_TAG .. "; reset ignorado")
+		return false
+	end
+
+	self:ClearFlight()
+	self.Fall = nil
+	self.Roll = nil
+
+	local groundY = self:GetGroundYAtPosition(center.Position)
+	local y = groundY and (groundY + self:GetBallRadius()) or center.Position.Y
+	self.ball.Position = Vector3.new(center.Position.X, y, center.Position.Z)
+
+	print("[ballManager] reset:", reason)
+	return self:SetState("Free")
+end
 -- Voo horizontal
 
 function ballManager:UpdateFlight(dt)
@@ -227,9 +282,7 @@ function ballManager:UpdateFlight(dt)
 
 	self.Flight.Travelled = self.Flight.Travelled + displacement.Magnitude
 	if self.Flight.Travelled > 2000 then
-		warn("[ballManager] Bola excedeu distância máxima. Parando.")
-		self:ClearFlight()
-		self:SetState("Free")
+		self:ResetToArena("max_distance")
 		return
 	end
 
@@ -378,10 +431,7 @@ function ballManager:UpdateFalling(dt)
 	self.ball.Position = nextPosition
 
 	if nextPosition.Y < -500 then
-		warn("[ballManager] Bola caiu no void. Resetando.")
-		self:SetState("Free")
-		self.ball.Position = Vector3.new(0, 10, 0)
-		self.Fall = nil
+		self:ResetToArena("void")
 	end
 end
 
@@ -462,6 +512,10 @@ end
 
 function ballManager:updateState(dt)
 	self.FSM:Update(dt)
+
+	if self:IsInMotion() and self:IsOutOfBounds(self.ball.Position) then
+		self:ResetToArena("out_of_bounds")
+	end
 end
 
 function ballManager:SetHolder(player)
