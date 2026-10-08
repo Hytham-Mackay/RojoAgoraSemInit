@@ -2,17 +2,22 @@ local ScoreManager = {}
 
 local scores = {}
 
-function ScoreManager.Get(duplaID)
-	return scores[duplaID] or 0
+function ScoreManager.Get(teamId: string): number
+	return scores[teamId] or 0
 end
 
-function ScoreManager.Add(duplaID, amount, reason)
-	scores[duplaID] = ScoreManager.Get(duplaID) + amount
+function ScoreManager.Add(teamId: string, amount: number, reason: string?)
+	scores[teamId] = ScoreManager.Get(teamId) + amount
+	print("[ScoreManager] " .. teamId .. " +" .. amount .. " (" .. (reason or "sem motivo") .. ") → Total: " .. scores[teamId])
+end
 
-	-- replicação: atributo numa Instance que os dois jogadores da dupla enxergam
-	local holder = workspace.Duplas:FindFirstChild(duplaID)
-	if holder then
-		holder:SetAttribute("Points", scores[duplaID])
+function ScoreManager.GetAll(): { [string]: number }
+	return scores
+end
+
+function ScoreManager.Reset()
+	for teamId in pairs(scores) do
+		scores[teamId] = 0
 	end
 end
 
