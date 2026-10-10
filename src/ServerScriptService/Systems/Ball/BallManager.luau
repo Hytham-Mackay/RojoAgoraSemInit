@@ -2,6 +2,9 @@ local StateMachine = require(script.Parent.Parent.Libs.StateMachine)
 local Pickup = require(script.Parent.Pickup)
 local Throw = require(script.Parent.Throw)
 local CollectionService = game:GetService("CollectionService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Network = require(ReplicatedStorage:WaitForChild("Network"))
+local Players = game:GetService("Players")
 
 local ballManager = {}
 ballManager.__index = ballManager
@@ -67,7 +70,7 @@ function ballManager.new(ball)
 			end,
 		},
 	})
-
+	self.Thrower = nil
 	self.Holder = nil
 	self.weld = nil
 
@@ -186,6 +189,7 @@ function ballManager:ThrowSuccess(player, chargeTime, target)
 		self.weld = nil
 	end
 
+	self.Thrower = self.Holder
 	self.Holder = nil
 	self.ball.Anchored = true
 
@@ -297,20 +301,21 @@ function ballManager:UpdateFlight(dt)
 	local newPosition = self.ball.Position + displacement
 	self.ball.Position = Vector3.new(newPosition.X, y, newPosition.Z)
 end
-
+--
 function ballManager:OnFlightHit(result)
 	local hitPart = result.Instance
-	local character = hitPart:FindFirstAncestorOfClass("Model")
+	local model = hitPart:FindFirstAncestorOfClass("Model")
+	local target = model and Players:GetPlayerFromCharacter(model)
 
-	if character and character:FindFirstChildOfClass("Humanoid") then
-		print("HIT PLAYER:", character.Name)
+	if target and self.Thrower then
+		print("HIT PLAYER:", target.Name, "| arremessador:", self.Thrower.Name)
+		Network.FireBindable("BallHit", self.Thrower, target)
 	else
-		print("Atingiu:", hitPart.Name)
+		print("Atingiu:", hitPart:GetFullName(), "| Thrower:", self.Thrower)
 	end
 
-	print("Bola atingiu:", result.Instance.Name)
-
 	local normal = result.Normal
+	-- ...resto igual
 	local velocity = self.Flight.Direction * self.Flight.Speed
 
 	local reflected = velocity - 2 * velocity:Dot(normal) * normal

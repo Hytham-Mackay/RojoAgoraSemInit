@@ -26,8 +26,7 @@ local CONFIG = {
 -- Eventos únicos do servidor (Para bindableEvents)
 
 local SERVER_ONLY_EVENTS = {
-	exemplo = true,
-	TestServerEvent = true,
+	BallHit = true,
 }
 
 -- Mesma ideia, mas para bindableFunctions
