@@ -15,6 +15,18 @@ function ScoreService.Add(player: Player, amount: number, reason: string?)
 	end
 
 	ScoreManager.Add(teamId, amount, reason)
+
+	-- avisa todos os clientes do novo total do time
+	Network.FireAllClients("ScoreChanged", teamId, ScoreManager.Get(teamId))
+end
+
+-- Se um dia usarem Reset, o placar dos clientes precisa ser avisado também.
+function ScoreService.Reset()
+	ScoreManager.Reset()
+
+	for teamId, total in pairs(ScoreManager.GetAll()) do
+		Network.FireAllClients("ScoreChanged", teamId, total)
+	end
 end
 
 function ScoreService.OnBallHit(thrower: Player, target: Player)
@@ -31,6 +43,11 @@ end
 
 Network.OnBindableEvent("BallHit"):Connect(function(thrower: Player, target: Player)
 	ScoreService.OnBallHit(thrower, target)
+end)
+
+-- Estado atual do placar, para quem entra depois da partida começar.
+Network.OnServerInvoke("GetScores", function(_player: Player)
+	return ScoreManager.GetAll()
 end)
 
 return ScoreService

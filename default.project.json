@@ -4,16 +4,29 @@
     "$className": "DataModel",
     "ReplicatedStorage": {
       "$className": "ReplicatedStorage",
+      "$properties": {
+        "SerializedOverrides": {
+          "BinaryString": ""
+        }
+      },
       "$path": "src/ReplicatedStorage"
     },
     "ServerScriptService": {
       "$className": "ServerScriptService",
+      "$properties": {
+        "SerializedOverrides": {
+          "BinaryString": ""
+        }
+      },
       "$path": "src/ServerScriptService"
     },
     "StarterGui": {
       "$className": "StarterGui",
       "$properties": {
-        "ScreenOrientation": "Sensor"
+        "ScreenOrientation": "Sensor",
+        "SerializedOverrides": {
+          "BinaryString": ""
+        }
       },
       "$path": "src/StarterGui"
     },
@@ -21,17 +34,30 @@
       "$className": "StarterPlayer",
       "StarterCharacterScripts": {
         "$className": "StarterCharacterScripts",
+        "$properties": {
+          "SerializedOverrides": {
+            "BinaryString": ""
+          }
+        },
         "$path": "src/StarterPlayer/StarterCharacterScripts"
       },
       "StarterPlayerScripts": {
         "$className": "StarterPlayerScripts",
+        "$properties": {
+          "SerializedOverrides": {
+            "BinaryString": ""
+          }
+        },
         "$path": "src/StarterPlayer/StarterPlayerScripts"
       },
       "$properties": {
         "AvatarJointUpgrade": "Enabled",
         "CameraMaxZoomDistance": 128.0,
         "CharacterBreakJointsOnDeath": false,
-        "CharacterUseJumpPower": false
+        "CharacterUseJumpPower": false,
+        "SerializedOverrides": {
+          "BinaryString": ""
+        }
       }
     },
     "Workspace": {
@@ -55,6 +81,15 @@
         },
         "PredictiveStreamingMode": {
           "Enum": 0
+        },
+        "ReplicationFrequency": {
+          "Enum": 0
+        },
+        "ReplicationThroughput": {
+          "Enum": 0
+        },
+        "SerializedOverrides": {
+          "BinaryString": ""
         },
         "SignalBehavior": "Deferred",
         "SimulationRate": {
