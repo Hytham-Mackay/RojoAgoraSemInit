@@ -4,10 +4,6 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Network = require(ReplicatedStorage:WaitForChild("Network"))
 
-Network.Prewarm({
-	bindableEvents = { "BallHit" },
-})
-
 local ScoreService = {}
 
 function ScoreService.Add(player: Player, amount: number, reason: string?)
