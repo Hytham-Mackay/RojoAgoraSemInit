@@ -4,6 +4,11 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Network = require(ReplicatedStorage:WaitForChild("Network"))
 
+Network.Prewarm({
+	remoteEvents = { "ScoreChanged" },
+	remoteFunctions = { "GetScores" },
+})
+
 local ScoreService = {}
 
 function ScoreService.Add(player: Player, amount: number, reason: string?)
@@ -40,6 +45,12 @@ function ScoreService.OnBallHit(thrower: Player, target: Player)
 
 	ScoreService.Add(thrower, 1, "acerto")
 end
+
+local POINTS_PICKUP = 10
+
+Network.OnBindableEvent("BallPickedUp"):Connect(function(player: Player)
+	ScoreService.Add(player, POINTS_PICKUP, "pegou a bola")
+end)
 
 Network.OnBindableEvent("BallHit"):Connect(function(thrower: Player, target: Player)
 	ScoreService.OnBallHit(thrower, target)

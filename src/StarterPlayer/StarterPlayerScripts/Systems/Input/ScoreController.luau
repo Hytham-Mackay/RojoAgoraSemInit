@@ -13,11 +13,6 @@ local scores = {}
 -- { [teamId]: true } — times que já receberam atualização ao vivo
 local updated = {}
 
--- Cada Frame dentro do ScreenGui "scoreFrame" representa um time:
--- o NOME do Frame é o teamId (TeamA, TeamB), com um Title e um Score dentro.
---
--- O ScreenGui tem ResetOnSpawn ligado, então é recriado a cada respawn.
--- Por isso ele é procurado de novo a cada render, nunca guardado numa variável.
 local function render()
 	local playerGui = Player:FindFirstChild("PlayerGui")
 	local gui = playerGui and playerGui:FindFirstChild(GUI_NAME)
@@ -30,12 +25,7 @@ local function render()
 			continue
 		end
 
-		local title = frame:FindFirstChild("Title")
 		local score = frame:FindFirstChild("Score")
-
-		if title and title:IsA("TextLabel") then
-			title.Text = frame.Name
-		end
 		if score and score:IsA("TextLabel") then
 			score.Text = tostring(scores[frame.Name] or 0)
 		end

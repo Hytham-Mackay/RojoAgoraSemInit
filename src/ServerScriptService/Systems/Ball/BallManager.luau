@@ -145,6 +145,8 @@ function ballManager:PickupSuccess(player)
 	self.weld = weld
 
 	print("O jogador " .. player.Name .. " pegou a bola")
+
+	Network.FireBindable("BallPickedUp", player)
 	return true
 end
 
