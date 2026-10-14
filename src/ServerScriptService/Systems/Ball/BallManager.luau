@@ -195,6 +195,17 @@ function ballManager:ThrowSuccess(player, chargeTime, target)
 	self.Holder = nil
 	self.ball.Anchored = true
 
+	-- A bola nasce soldada à mão do arremessador, sobreposta ao personagem.
+	-- Sem excluir o arremessador do raycast de voo, o primeiro Spherecast
+	-- acerta o próprio lançador e aborta o voo (Falling/Rolling prematuros),
+	-- principalmente com o jogador em movimento.
+	local throwerCharacter = player.Character
+	if throwerCharacter then
+		self.FlightRaycastParams.FilterDescendantsInstances = { self.ball, throwerCharacter }
+	else
+		self.FlightRaycastParams.FilterDescendantsInstances = { self.ball }
+	end
+
 	self.ball.Position = Vector3.new(self.ball.Position.X, flightY, self.ball.Position.Z)
 
 	self:SetState("Flying")
@@ -266,6 +277,9 @@ function ballManager:ResetToArena(reason)
 	self.Fall = nil
 	self.Roll = nil
 
+	-- Garante que uma saída de emergência do voo também restaure o filtro.
+	self.FlightRaycastParams.FilterDescendantsInstances = { self.ball }
+
 	local groundY = self:GetGroundYAtPosition(center.Position)
 	local y = groundY and (groundY + self:GetBallRadius()) or center.Position.Y
 	self.ball.Position = Vector3.new(center.Position.X, y, center.Position.Z)
@@ -309,6 +323,11 @@ function ballManager:OnFlightHit(result)
 	local model = hitPart:FindFirstAncestorOfClass("Model")
 	local target = model and Players:GetPlayerFromCharacter(model)
 
+	if target and target == self.Thrower then
+		-- Defesa complementar: a própria personagem nunca encerra o voo de quem arremessou.
+		return
+	end
+
 	if target and self.Thrower then
 		print("HIT PLAYER:", target.Name, "| arremessador:", self.Thrower.Name)
 		Network.FireBindable("BallHit", self.Thrower, target)
@@ -342,6 +361,10 @@ function ballManager:ClearFlight()
 end
 
 function ballManager:StartFalling(horizontalVelocity)
+	-- O voo terminou: restauro o filtro padrão. Depois do ricochete a bola
+	-- volta a enxergar todas as personagens, como no comportamento original.
+	self.FlightRaycastParams.FilterDescendantsInstances = { self.ball }
+
 	self.Fall = {
 		HorizontalVelocity = horizontalVelocity,
 		VerticalVelocity = 0,
