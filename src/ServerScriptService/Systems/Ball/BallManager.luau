@@ -323,11 +323,6 @@ function ballManager:OnFlightHit(result)
 	local model = hitPart:FindFirstAncestorOfClass("Model")
 	local target = model and Players:GetPlayerFromCharacter(model)
 
-	if target and target == self.Thrower then
-		-- Defesa complementar: a própria personagem nunca encerra o voo de quem arremessou.
-		return
-	end
-
 	if target and self.Thrower then
 		print("HIT PLAYER:", target.Name, "| arremessador:", self.Thrower.Name)
 		Network.FireBindable("BallHit", self.Thrower, target)
