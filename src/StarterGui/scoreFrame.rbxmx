@@ -21,7 +21,7 @@
 				<token name="VerticalAlignment">0</token>
 				<token name="VerticalFlex">0</token>
 				<token name="HorizontalFlex">0</token>
-				<token name="SortOrder">1</token>
+				<token name="SortOrder">2</token>
 				<token name="ItemLineAlignment">0</token>
 				<BinaryString name="AttributesSerialize"></BinaryString>
 				<BinaryString name="Tags"></BinaryString>
