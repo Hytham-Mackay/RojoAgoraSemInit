@@ -12,9 +12,7 @@ end
 
 function cameraController:Start()
 	
-
 	local player = Players.LocalPlayer
-	print("LocalPlayer:", Players.LocalPlayer)
 	
 
 	if player.Character then

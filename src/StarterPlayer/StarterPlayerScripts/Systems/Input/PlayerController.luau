@@ -44,19 +44,6 @@ function PlayerController:Start()
 			chargeStart = nil
 		end
 	end)
-
-	-- Dash
-	UserInputService.InputBegan:Connect(function(input, gameProcessed)
-		if gameProcessed then
-			return
-		end
-
-		print("Dash")
-
-		if input.KeyCode == Enum.KeyCode.Space then
-			Network.FireServer("DashRequest", Enum.KeyCode.Space)
-		end
-	end)
 end
 
 return PlayerController

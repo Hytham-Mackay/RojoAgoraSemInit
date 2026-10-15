@@ -38,7 +38,19 @@ function ScoreService.OnBallHit(thrower: Player, target: Player)
 		return -- o arremessador saiu durante o voo
 	end
 
-	ScoreService.Add(thrower, 1, "acerto")
+	local throwerTeam = TeamManager.GetTeam(thrower)
+	local targetTeam = TeamManager.GetTeam(target)
+
+	if not throwerTeam or not targetTeam then
+		return -- alguém fora de time não entra na pontuação
+	end
+
+	if throwerTeam == targetTeam then
+		print("[ScoreService] Acerto no próprio time: " .. thrower.Name .. " acertou " .. target.Name)
+		return -- acerto no próprio time não conta
+	end
+
+	ScoreService.Add(thrower, 15, "acerto")
 end
 
 local POINTS_PICKUP = 10

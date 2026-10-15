@@ -7,7 +7,6 @@ local Player = Players.LocalPlayer
 local function updateHealth(bar,humanoid)
 
 	local percentage = humanoid.Health / humanoid.MaxHealth
-	print(bar)
 	bar.Size = UDim2.fromScale(percentage, 1)	
 end
 
