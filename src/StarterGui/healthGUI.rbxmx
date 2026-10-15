@@ -1,0 +1,189 @@
+<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">
+	<Meta name="ExplicitAutoJoints">true</Meta>
+	<Item class="ScreenGui" referent="RBX_HG_ROOT">
+		<Properties>
+			<bool name="Enabled">true</bool>
+			<string name="Name">healthGUI</string>
+			<int name="DisplayOrder">1</int>
+			<bool name="ResetOnSpawn">false</bool>
+			<token name="ScreenInsets">1</token>
+			<token name="ZIndexBehavior">1</token>
+			<Ref name="SelectionImageObject">null</Ref>
+			<BinaryString name="AttributesSerialize"></BinaryString>
+			<BinaryString name="Tags"></BinaryString>
+		</Properties>
+		<Item class="Frame" referent="RBX_HG_FRAME">
+			<Properties>
+				<string name="Name">healthFrame</string>
+				<UDim2 name="Size"><XS>0</XS><XO>280</XO><YS>0</YS><YO>40</YO></UDim2>
+				<Vector2 name="AnchorPoint"><X>0</X><Y>1</Y></Vector2>
+				<UDim2 name="Position"><XS>0</XS><XO>25</XO><YS>1</YS><YO>-25</YO></UDim2>
+				<Color3 name="BackgroundColor3">986902</Color3>
+				<float name="BackgroundTransparency">0.2</float>
+				<int name="BorderSizePixel">0</int>
+				<bool name="Visible">true</bool>
+				<int name="ZIndex">1</int>
+				<Ref name="SelectionImageObject">null</Ref>
+				<BinaryString name="AttributesSerialize"></BinaryString>
+				<BinaryString name="Tags"></BinaryString>
+			</Properties>
+			<Item class="UICorner" referent="RBX_HG_FRAME_CORNER">
+				<Properties>
+					<string name="Name">UICorner</string>
+					<UDim name="CornerRadius"><S>0</S><O>10</O></UDim>
+					<BinaryString name="AttributesSerialize"></BinaryString>
+					<BinaryString name="Tags"></BinaryString>
+				</Properties>
+			</Item>
+			<Item class="UIStroke" referent="RBX_HG_FRAME_STROKE">
+				<Properties>
+					<string name="Name">UIStroke</string>
+					<float name="Thickness">2</float>
+					<Color3 name="Color">2960692</Color3>
+					<float name="Transparency">0</float>
+					<token name="ApplyStrokeMode">1</token>
+					<token name="LineJoinMode">0</token>
+					<BinaryString name="AttributesSerialize"></BinaryString>
+					<BinaryString name="Tags"></BinaryString>
+				</Properties>
+			</Item>
+			<Item class="TextLabel" referent="RBX_HG_HP_LABEL">
+				<Properties>
+					<string name="Name">HPLabel</string>
+					<UDim2 name="Size"><XS>0</XS><XO>28</XO><YS>0</YS><YO>22</YO></UDim2>
+					<Vector2 name="AnchorPoint"><X>0</X><Y>0.5</Y></Vector2>
+					<UDim2 name="Position"><XS>0</XS><XO>12</XO><YS>0.5</YS><YO>0</YO></UDim2>
+					<float name="BackgroundTransparency">1</float>
+					<string name="Text">HP</string>
+					<Color3 name="TextColor3">15744060</Color3>
+					<bool name="TextScaled">true</bool>
+					<token name="Font">4</token>
+					<token name="TextXAlignment">2</token>
+					<token name="TextYAlignment">1</token>
+					<Color3 name="TextStrokeColor3">0</Color3>
+					<float name="TextStrokeTransparency">0.7</float>
+					<int name="ZIndex">2</int>
+					<Ref name="SelectionImageObject">null</Ref>
+					<BinaryString name="AttributesSerialize"></BinaryString>
+					<BinaryString name="Tags"></BinaryString>
+				</Properties>
+				<Item class="UITextSizeConstraint" referent="RBX_HG_HP_SIZE_CONSTRAINT">
+					<Properties>
+						<string name="Name">MaxSize</string>
+						<int name="MaxTextSize">15</int>
+						<int name="MinTextSize">10</int>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<BinaryString name="Tags"></BinaryString>
+					</Properties>
+				</Item>
+			</Item>
+			<Item class="Frame" referent="RBX_HG_CONTAINER">
+				<Properties>
+					<string name="Name">Container</string>
+					<UDim2 name="Size"><XS>1</XS><XO>-54</XO><YS>0</YS><YO>22</YO></UDim2>
+					<Vector2 name="AnchorPoint"><X>0</X><Y>0.5</Y></Vector2>
+					<UDim2 name="Position"><XS>0</XS><XO>44</XO><YS>0.5</YS><YO>0</YO></UDim2>
+					<Color3 name="BackgroundColor3">1838102</Color3>
+					<float name="BackgroundTransparency">0.3</float>
+					<int name="BorderSizePixel">0</int>
+					<bool name="ClipsDescendants">true</bool>
+					<bool name="Visible">true</bool>
+					<int name="ZIndex">2</int>
+					<Ref name="SelectionImageObject">null</Ref>
+					<BinaryString name="AttributesSerialize"></BinaryString>
+					<BinaryString name="Tags"></BinaryString>
+				</Properties>
+				<Item class="UICorner" referent="RBX_HG_CONTAINER_CORNER">
+					<Properties>
+						<string name="Name">UICorner</string>
+						<UDim name="CornerRadius"><S>0</S><O>6</O></UDim>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<BinaryString name="Tags"></BinaryString>
+					</Properties>
+				</Item>
+				<Item class="UIStroke" referent="RBX_HG_CONTAINER_STROKE">
+					<Properties>
+						<string name="Name">UIStroke</string>
+						<float name="Thickness">1</float>
+						<Color3 name="Color">3289650</Color3>
+						<float name="Transparency">0.4</float>
+						<token name="ApplyStrokeMode">1</token>
+						<token name="LineJoinMode">0</token>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<BinaryString name="Tags"></BinaryString>
+					</Properties>
+				</Item>
+				<Item class="Frame" referent="RBX_HG_DAMAGE_BAR">
+					<Properties>
+						<string name="Name">damageBar</string>
+						<UDim2 name="Size"><XS>1</XS><XO>0</XO><YS>1</YS><YO>0</YO></UDim2>
+						<Vector2 name="AnchorPoint"><X>0</X><Y>0</Y></Vector2>
+						<UDim2 name="Position"><XS>0</XS><XO>0</XO><YS>0</YS><YO>0</YO></UDim2>
+						<Color3 name="BackgroundColor3">11809320</Color3>
+						<float name="BackgroundTransparency">0.2</float>
+						<int name="BorderSizePixel">0</int>
+						<bool name="Visible">true</bool>
+						<int name="ZIndex">2</int>
+						<Ref name="SelectionImageObject">null</Ref>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<BinaryString name="Tags"></BinaryString>
+					</Properties>
+					<Item class="UICorner" referent="RBX_HG_DAMAGE_CORNER">
+						<Properties>
+							<string name="Name">UICorner</string>
+							<UDim name="CornerRadius"><S>0</S><O>6</O></UDim>
+							<BinaryString name="AttributesSerialize"></BinaryString>
+							<BinaryString name="Tags"></BinaryString>
+						</Properties>
+					</Item>
+				</Item>
+				<Item class="Frame" referent="RBX_HG_HEALTH_BAR">
+					<Properties>
+						<string name="Name">healthBar</string>
+						<UDim2 name="Size"><XS>1</XS><XO>0</XO><YS>1</YS><YO>0</YO></UDim2>
+						<Vector2 name="AnchorPoint"><X>0</X><Y>0</Y></Vector2>
+						<UDim2 name="Position"><XS>0</XS><XO>0</XO><YS>0</YS><YO>0</YO></UDim2>
+						<Color3 name="BackgroundColor3">15412525</Color3>
+						<float name="BackgroundTransparency">0</float>
+						<int name="BorderSizePixel">0</int>
+						<bool name="Visible">true</bool>
+						<int name="ZIndex">3</int>
+						<Ref name="SelectionImageObject">null</Ref>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<BinaryString name="Tags"></BinaryString>
+					</Properties>
+					<Item class="UICorner" referent="RBX_HG_HEALTH_CORNER">
+						<Properties>
+							<string name="Name">UICorner</string>
+							<UDim name="CornerRadius"><S>0</S><O>6</O></UDim>
+							<BinaryString name="AttributesSerialize"></BinaryString>
+							<BinaryString name="Tags"></BinaryString>
+						</Properties>
+					</Item>
+				</Item>
+				<Item class="TextLabel" referent="RBX_HG_HEALTH_TEXT">
+					<Properties>
+						<string name="Name">healthText</string>
+						<UDim2 name="Size"><XS>1</XS><XO>0</XO><YS>1</YS><YO>0</YO></UDim2>
+						<Vector2 name="AnchorPoint"><X>0.5</X><Y>0.5</Y></Vector2>
+						<UDim2 name="Position"><XS>0.5</XS><XO>0</XO><YS>0.5</YS><YO>0</YO></UDim2>
+						<float name="BackgroundTransparency">1</float>
+						<string name="Text">100 / 100</string>
+						<Color3 name="TextColor3">16777215</Color3>
+						<bool name="TextScaled">false</bool>
+						<float name="TextSize">13</float>
+						<token name="Font">4</token>
+						<token name="TextXAlignment">2</token>
+						<token name="TextYAlignment">1</token>
+						<Color3 name="TextStrokeColor3">0</Color3>
+						<float name="TextStrokeTransparency">0.4</float>
+						<int name="ZIndex">4</int>
+						<Ref name="SelectionImageObject">null</Ref>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<BinaryString name="Tags"></BinaryString>
+					</Properties>
+				</Item>
+			</Item>
+		</Item>
+	</Item>
+</roblox>
