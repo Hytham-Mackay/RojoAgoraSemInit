@@ -1,6 +1,5 @@
 local TeamManager = require(script.Parent.Parent.Team.TeamManager)
 local ScoreManager = require(script.Parent.ScoreManager)
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Network = require(ReplicatedStorage:WaitForChild("Network"))
 
@@ -29,38 +28,21 @@ function ScoreService.Reset()
 	end
 end
 
-function ScoreService.OnBallHit(thrower: Player, target: Player)
-	if thrower == target then
-		return -- auto-acerto não conta
-	end
+local POINTS_PICKUP = 5
+local POINTS_HIT = 15
+local POINTS_ELIMINATION = 30
 
-	if thrower.Parent ~= Players then
-		return -- o arremessador saiu durante o voo
-	end
-
-	local throwerTeam = TeamManager.GetTeam(thrower)
-	local targetTeam = TeamManager.GetTeam(target)
-
-	if not throwerTeam or not targetTeam then
-		return -- alguém fora de time não entra na pontuação
-	end
-
-	if throwerTeam == targetTeam then
-		print("[ScoreService] Acerto no próprio time: " .. thrower.Name .. " acertou " .. target.Name)
-		return -- acerto no próprio time não conta
-	end
-
-	ScoreService.Add(thrower, 15, "acerto")
+function ScoreService.OnValidHit(hit)
+	local points = hit.Killed and POINTS_ELIMINATION or POINTS_HIT
+	ScoreService.Add(hit.Thrower, points, hit.Killed and "eliminação" or "acerto")
 end
 
-local POINTS_PICKUP = 10
+Network.OnBindableEvent("ValidHit"):Connect(function(hit)
+	ScoreService.OnValidHit(hit)
+end)
 
 Network.OnBindableEvent("BallPickedUp"):Connect(function(player: Player)
 	ScoreService.Add(player, POINTS_PICKUP, "pegou a bola")
-end)
-
-Network.OnBindableEvent("BallHit"):Connect(function(thrower: Player, target: Player)
-	ScoreService.OnBallHit(thrower, target)
 end)
 
 -- Estado atual do placar, para quem entra depois da partida começar.

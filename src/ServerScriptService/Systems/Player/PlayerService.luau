@@ -28,11 +28,6 @@ end
 
 function PlayerService:RemovePlayer(player)
 	local manager = self.Managers[player]
-
-	if manager then
-		manager:ClearDashImpulse()
-	end
-
 	self.Managers[player] = nil
 end
 

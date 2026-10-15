@@ -323,7 +323,7 @@ function ballManager:OnFlightHit(result)
 	local model = hitPart:FindFirstAncestorOfClass("Model")
 	local target = model and Players:GetPlayerFromCharacter(model)
 
-	if target and self.Thrower then
+	if target and self.Thrower and target ~= self.Thrower then
 		print("HIT PLAYER:", target.Name, "| arremessador:", self.Thrower.Name)
 		Network.FireBindable("BallHit", self.Thrower, target)
 	else
