@@ -36,6 +36,8 @@ function PlayerController:Start()
 				return
 			end
 
+			local chargeTime = tick() - chargeStart
+
 			local target = mouseSegment:GetTargetPosition()
 
 			if not target then
@@ -44,7 +46,7 @@ function PlayerController:Start()
 				return
 			end
 
-			Network.FireServer("ThrowRequest", chargeStart, target)
+			Network.FireServer("ThrowRequest", chargeTime, target)
 
 			chargeStart = nil
 		end

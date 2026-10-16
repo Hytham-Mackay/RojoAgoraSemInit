@@ -55,27 +55,30 @@ function ballService:Start()
 		return closest
 	end
 
-	Network.SetValidator("ThrowRequest", function(player, chargeStart, target)
+	Network.SetValidator("ThrowRequest", function(player, chargeTime, target)
 
-		if typeof(chargeStart) ~= "number" then
-			return false, "chargeStart invalido"
+		if typeof(chargeTime) ~= "number" then
+			return false, "chargeTime invalido"
 		end
 
 		if typeof(target) ~= "Vector3" then
 			return false, "target invalido"
 		end
 
-		local chargeTime = tick() - chargeStart
-
 		if chargeTime < 0 then
-			return false, "chargeStart futuro"
+			return false, "chargeTime negativo"
+		end
+
+		-- Tolerância de 1s acima do máximo para absorver latência de rede
+		if chargeTime > 6 then
+			return false, "chargeTime excessivo"
 		end
 
 		return true
 	end)
 
 
-	Network.OnServerEvent("ThrowRequest"):Connect(function(player, chargeStart, target)
+	Network.OnServerEvent("ThrowRequest"):Connect(function(player, chargeTime, target)
 		
 		local manager = self:GetManagerFromPlayer(player)
 		
@@ -84,7 +87,7 @@ function ballService:Start()
 			return
 		end
 
-		local chargeTime = math.max(0, tick() - chargeStart)
+		chargeTime = math.max(0, chargeTime)
 
 		manager:ThrowRequest(player, chargeTime, target)
 
