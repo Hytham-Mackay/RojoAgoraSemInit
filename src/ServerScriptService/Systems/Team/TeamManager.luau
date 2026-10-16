@@ -66,6 +66,13 @@ function TeamManager.HasTeam(player: Player): boolean
 	return playerTeams[player] ~= nil
 end
 
+-- Inimigos = os dois estão em time e os times são diferentes.
+function TeamManager.AreEnemies(a: Player, b: Player): boolean
+	local teamA = playerTeams[a]
+	local teamB = playerTeams[b]
+	return teamA ~= nil and teamB ~= nil and teamA ~= teamB
+end
+
 ------------------------------------------------------------------------
 
 -- Cleanup quando o jogador sai do jogo.

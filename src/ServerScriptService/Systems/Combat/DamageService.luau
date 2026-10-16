@@ -25,15 +25,8 @@ function DamageService.OnBallHit(thrower: Player, target: Player)
 		return -- Saiu durante o lançamento
 	end
 
-	local throwerTeam = TeamManager.GetTeam(thrower)
-	local targetTeam = TeamManager.GetTeam(target)
-
-	if not throwerTeam or not targetTeam then
-		return -- quem está fora de time não entra no combate
-	end
-
-	if throwerTeam == targetTeam then
-		return -- Acerto no próprio time não conta
+	if not TeamManager.AreEnemies(thrower, target) then
+		return -- fora de time ou mesmo time não entra no combate
 	end
 
 	local humanoid = getAliveHumanoid(target)

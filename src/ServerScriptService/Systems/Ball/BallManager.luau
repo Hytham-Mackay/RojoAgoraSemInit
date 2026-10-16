@@ -47,7 +47,7 @@ function ballManager.new(ball)
 				self.ball.ProximityPrompt.Enabled = false
 			end,
 		},
-		{ Name = "Held", From = { "Free" } },
+		{ Name = "Held", From = { "Free", "Flying" } },
 		{
 			Name = "Flying",
 			From = { "Held" },
@@ -122,9 +122,10 @@ function ballManager:Pickup(player)
 	return Pickup:Execute(self, player)
 end
 
-function ballManager:PickupSuccess(player)
+function ballManager:AttachToHolder(player)
 	local character = player.Character
-	if not character then
+	local hand = character and character:FindFirstChild("RightHand")
+	if not hand then
 		return false
 	end
 
@@ -134,8 +135,6 @@ function ballManager:PickupSuccess(player)
 
 	self:SetHolder(player)
 	self.ball.Anchored = false
-
-	local hand = character:WaitForChild("RightHand")
 	self.ball.CFrame = hand.CFrame
 
 	local weld = Instance.new("WeldConstraint")
@@ -144,9 +143,37 @@ function ballManager:PickupSuccess(player)
 	weld.Parent = self.ball
 	self.weld = weld
 
+	return true
+end
+
+function ballManager:PickupSuccess(player)
+	if not self:AttachToHolder(player) then
+		return false
+	end
+
 	print("O jogador " .. player.Name .. " pegou a bola")
 
 	Network.FireBindable("BallPickedUp", player)
+	return true
+end
+
+function ballManager:ParryCatch(player)
+	if not self.FSM:Is("Flying") then
+		return false
+	end
+
+	local thrower = self.thrower
+
+	-- Anexa ANTES de limpar o voo: se falhar, a bola continua voando normalmente.
+	if not self:AttachToHolder(player) then
+		return false
+	end
+
+	self:ClearFlight()
+	self.FlightRaycastParams.FilterDescendantsInstances = { self.ball }
+	self.Thrower = nil
+
+	Network.FireBindable("BallParried", { Catcher = player, Thrower = thrower })
 	return true
 end
 
@@ -159,7 +186,7 @@ function ballManager:ThrowRequest(player, chargeTime, target)
 end
 
 function ballManager:ThrowSuccess(player, chargeTime, target)
-	local MIN_THROW_SPEED = 30
+	local MIN_THROW_SPEED = 10
 	local MAX_THROW_SPEED = 300
 	local MAX_CHARGE_TIME = 5
 
@@ -324,6 +351,10 @@ function ballManager:OnFlightHit(result)
 	local target = model and Players:GetPlayerFromCharacter(model)
 
 	if target and self.Thrower and target ~= self.Thrower then
+		if Network.InvokeBindable("ParryCheck", self.Thrower, target) and self:ParryCatch(target) then
+			return -- agarrou: sem dano e sem ricochete
+		end
+
 		print("HIT PLAYER:", target.Name, "| arremessador:", self.Thrower.Name)
 		Network.FireBindable("BallHit", self.Thrower, target)
 	else

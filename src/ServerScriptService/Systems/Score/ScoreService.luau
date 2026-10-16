@@ -45,6 +45,12 @@ Network.OnBindableEvent("BallPickedUp"):Connect(function(player: Player)
 	ScoreService.Add(player, POINTS_PICKUP, "pegou a bola")
 end)
 
+local POINTS_PARRY = 20
+
+Network.OnBindableEvent("BallParried"):Connect(function(info)
+	ScoreService.Add(info.Catcher, POINTS_PARRY, "parry")
+end)
+
 -- Estado atual do placar, para quem entra depois da partida começar.
 Network.OnServerInvoke("GetScores", function(_player: Player)
 	return ScoreManager.GetAll()

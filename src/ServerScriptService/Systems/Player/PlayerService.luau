@@ -20,6 +20,12 @@ function PlayerService:Start()
 	Players.PlayerRemoving:Connect(function(player)
 		self:RemovePlayer(player)
 	end)
+
+	RunService.Heartbeat:Connect(function(dt)
+		for _, manager in pairs(self.Managers) do
+			manager:Update(dt)
+		end
+	end)
 end
 
 function PlayerService:AddPlayer(player)

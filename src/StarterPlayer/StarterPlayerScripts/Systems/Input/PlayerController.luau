@@ -16,6 +16,11 @@ function PlayerController:Start()
 			return
 		end
 
+		if input.UserInputType == Enum.UserInputType.MouseButton2 then
+			print("[PlayerController] MouseButton2 detectado -> Enviando ParryRequest...")
+			Network.FireServer("ParryRequest")
+		end
+
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			chargeStart = tick()
 		end

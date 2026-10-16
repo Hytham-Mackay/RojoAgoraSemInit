@@ -7,7 +7,7 @@ function PrewarmService:Start()
 	Network.Prewarm({
 		remoteEvents = { "ScoreChanged" },
 		remoteFunctions = { "GetScores" },
-		bindableEvents = { "BallHit", "BallPickedUp", "ValidHit" },
+		bindableEvents = { "BallHit", "BallPickedUp", "ValidHit", "BallParried" },
 	})
 end
 
