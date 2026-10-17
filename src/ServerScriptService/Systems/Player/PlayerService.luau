@@ -2,8 +2,6 @@ local PlayerService = {}
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Network = require(ReplicatedStorage:WaitForChild("Network"))
 local PlayerManager = require(script.Parent.PlayerManager)
 
 PlayerService.Managers = {}
@@ -29,11 +27,24 @@ function PlayerService:Start()
 end
 
 function PlayerService:AddPlayer(player)
-	self.Managers[player] = PlayerManager.new(player)
+	local manager = PlayerManager.new(player)
+	self.Managers[player] = manager
+
+	local function onCharacter(character)
+		manager:Reset()
+		local humanoid = character:WaitForChild("Humanoid")
+		humanoid.Died:Connect(function()
+			manager:Reset()
+		end)
+	end
+
+	player.CharacterAdded:Connect(onCharacter)
+	if player.Character then
+		task.spawn(onCharacter, player.Character)
+	end
 end
 
 function PlayerService:RemovePlayer(player)
-	local manager = self.Managers[player]
 	self.Managers[player] = nil
 end
 

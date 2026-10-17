@@ -57,6 +57,7 @@ function ParryService.OnParryRequest(player: Player)
 
 	if manager.FSM:Goto("ParryStartup") then
 		manager.LastParry = now
+		Network.FireClient("ParryCooldown", player, ParryConfig.COOLDOWN, now)
 		print("[ParryService] ✅ Parry ativado com sucesso para " .. player.Name .. "! Entrou em ParryStartup.")
 	end
 end
