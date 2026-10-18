@@ -1,5 +1,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+
 local Network = require(ReplicatedStorage:WaitForChild("Network"))
 
 local ParryController = {}
@@ -18,6 +20,8 @@ local label
 local fill
 local stroke
 local version = 0
+local fillTween
+local connection
 
 local function createGui()
 	local playerGui = player:WaitForChild("PlayerGui")
@@ -70,7 +74,7 @@ local function createGui()
 	label.Position = UDim2.fromOffset(12, 20)
 	label.Size = UDim2.new(1, -24, 0, 17)
 	label.Font = Enum.Font.GothamMedium
-	label.Text = string.format("PRONTO  •  %.0fs", COOLDOWN_FALLBACK)
+	label.Text = "PRONTO"
 	label.TextColor3 = COLORS.ready
 	label.TextSize = 12
 	label.TextXAlignment = Enum.TextXAlignment.Left
@@ -106,11 +110,25 @@ local function createGui()
 end
 
 local function updateCooldown(duration, serverStart)
+	-- Interface ainda não criada ou já destruída: ignora o evento
+	if not (gui and gui.Parent and stroke and fill and label) then
+		return
+	end
+
 	version += 1
 	local currentVersion = version
+	local currentGui = gui
+
 	duration = math.max(tonumber(duration) or COOLDOWN_FALLBACK, 0)
 	serverStart = tonumber(serverStart) or workspace:GetServerTimeNow()
 	local endAt = serverStart + duration
+
+	-- Se a animação de "terminou" ainda estiver rodando, cancela:
+	-- senão ela continua sobrescrevendo fill.Size no início deste cooldown.
+	if fillTween then
+		fillTween:Cancel()
+		fillTween = nil
+	end
 
 	stroke.Color = COLORS.cooldown
 	fill.BackgroundColor3 = COLORS.cooldown
@@ -118,6 +136,10 @@ local function updateCooldown(duration, serverStart)
 
 	task.spawn(function()
 		while currentVersion == version do
+			if not currentGui.Parent then
+				return
+			end
+
 			local remaining = math.max(0, endAt - workspace:GetServerTimeNow())
 			if remaining <= 0 then
 				break
@@ -128,7 +150,7 @@ local function updateCooldown(duration, serverStart)
 			task.wait(0.05)
 		end
 
-		if currentVersion ~= version then
+		if currentVersion ~= version or not currentGui.Parent then
 			return
 		end
 
@@ -136,13 +158,29 @@ local function updateCooldown(duration, serverStart)
 		label.TextColor3 = COLORS.ready
 		stroke.Color = COLORS.ready
 		fill.BackgroundColor3 = COLORS.ready
-		fill:TweenSize(UDim2.fromScale(1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.16, true)
+
+		fillTween = TweenService:Create(
+			fill,
+			TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+			{ Size = UDim2.fromScale(1, 0) }
+		)
+		fillTween:Play()
 	end)
 end
 
 function ParryController:Start()
+	-- Encerra loops de cooldown antigos e a conexão anterior
+	version += 1
+	if connection then
+		connection:Disconnect()
+	end
+	if fillTween then
+		fillTween:Cancel()
+		fillTween = nil
+	end
+
 	createGui()
-	Network.OnClientEvent("ParryCooldown"):Connect(updateCooldown)
+	connection = Network.OnClientEvent("ParryCooldown"):Connect(updateCooldown)
 end
 
 return ParryController
