@@ -1,55 +1,42 @@
-local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local mouseSegment = require(script.Parent.Parent.Camera.MouseController)
-
+local InputController = require(script.Parent.Parent.Libs.InputController)
+local InputConfig = require(script.Parent.InputConfig)
 local Network = require(ReplicatedStorage:WaitForChild("Network"))
+
+local Actions = InputConfig.Actions
 
 local PlayerController = {}
 
 local chargeStart
 
 function PlayerController:Start()
-	-- Throw
-	UserInputService.InputBegan:Connect(function(input, gameProcessed)
-		if gameProcessed then
-			return
-		end
+	InputController.Init(InputConfig)
 
-		if input.UserInputType == Enum.UserInputType.MouseButton2 then
-			print("[PlayerController] MouseButton2 detectado -> Enviando ParryRequest...")
-			Network.FireServer("ParryRequest")
-		end
-
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			chargeStart = tick()
-		end
+	InputController.OnPressed(Actions.Parry, function()
+		Network.FireServer("ParryRequest")
 	end)
 
-	UserInputService.InputEnded:Connect(function(input, gameProcessed)
-		if gameProcessed then
+	InputController.OnPressed(Actions.Throw, function()
+		chargeStart = tick()
+	end)
+
+	InputController.OnReleased(Actions.Throw, function()
+		if not chargeStart then
 			return
 		end
 
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			if not chargeStart then
-				return
-			end
+		local chargeTime = tick() - chargeStart
+		chargeStart = nil
 
-			local chargeTime = tick() - chargeStart
-
-			local target = mouseSegment:GetTargetPosition()
-
-			if not target then
-				warn("[PlayerController] MouseHit é nil, arremesso cancelado.")
-				chargeStart = nil
-				return
-			end
-
-			Network.FireServer("ThrowRequest", chargeTime, target)
-
-			chargeStart = nil
+		local target = mouseSegment:GetTargetPosition()
+		if not target then
+			warn("[PlayerController] MouseHit é nil, arremesso cancelado.")
+			return
 		end
+
+		Network.FireServer("ThrowRequest", chargeTime, target)
 	end)
 end
 
