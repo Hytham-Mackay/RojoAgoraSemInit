@@ -47,7 +47,14 @@ function ballManager.new(ball)
 				self.ball.ProximityPrompt.Enabled = false
 			end,
 		},
-		{ Name = "Held", From = { "Free", "Flying" } },
+		{
+			Name = "Held",
+			From = { "Free", "Flying", "Rolling", "Falling" },
+			Started = function()
+				self.Roll = nil
+				self.Fall = nil
+			end,
+		},
 		{
 			Name = "Flying",
 			From = { "Held" },
@@ -61,12 +68,21 @@ function ballManager.new(ball)
 			Update = function(dt)
 				self:UpdateFalling(dt)
 			end,
+			Exited = function()
+				self.ball.ProximityPrompt.Enabled = false
+			end,
 		},
 		{
 			Name = "Rolling",
 			From = { "Falling" },
+			Started = function()
+				self.ball.ProximityPrompt.Enabled = true
+			end,
 			Update = function(dt)
 				self:UpdateRolling(dt)
+			end,
+			Exited = function()
+				self.ball.ProximityPrompt.Enabled = false
 			end,
 		},
 	})
@@ -109,13 +125,17 @@ end
 
 function ballManager:ConnectEvents()
 	self.ball.ProximityPrompt.Triggered:Connect(function(player)
+		print(player.Name .. " tentou pegar a bola | estado:", self.FSM.CurrentState, "| CanPickup:", self:CanPickup())
 		print(player.Name .. " tentou pegar a bola")
 		self:Pickup(player)
 	end)
 end
 
 function ballManager:CanPickup()
-	return self.FSM:Is("Free")
+	if self.FSM:Is("Free") or self.FSM:Is("Rolling") then
+		return true
+	end
+	return self.FSM:Is("Falling") and self.Fall ~= nil and self.Fall.Grounded == true
 end
 
 function ballManager:Pickup(player)
@@ -162,7 +182,7 @@ function ballManager:ParryCatch(player)
 		return false
 	end
 
-	local thrower = self.thrower
+	local thrower = self.Thrower
 
 	-- Anexa ANTES de limpar o voo: se falhar, a bola continua voando normalmente.
 	if not self:AttachToHolder(player) then
@@ -387,8 +407,6 @@ function ballManager:ClearFlight()
 end
 
 function ballManager:StartFalling(horizontalVelocity)
-	-- O voo terminou: restauro o filtro padrão. Depois do ricochete a bola
-	-- volta a enxergar todas as personagens, como no comportamento original.
 	self.FlightRaycastParams.FilterDescendantsInstances = { self.ball }
 
 	self.Fall = {
@@ -399,6 +417,7 @@ function ballManager:StartFalling(horizontalVelocity)
 		GroundFriction = self.FallConfig.GroundFriction,
 		AirResistance = self.FallConfig.AirResistance,
 		Position = self.ball.Position,
+		Grounded = false,
 	}
 
 	self:SetState("Falling")
@@ -433,6 +452,13 @@ function ballManager:UpdateFalling(dt)
 			-- Posiciona no chão
 			self.ball.Position = Vector3.new(nextPosition.X, groundY + ballRadius, nextPosition.Z)
 			fall.Position = self.ball.Position
+
+			-- Checagem de toque, pegar liberado ao tocar o chão.
+
+			if not fall.Grounded then
+				fall.Grounded = true
+				self.ball.ProximityPrompt.Enabled = true
+			end
 
 			-- QUICADA: inverte e aplica damping
 

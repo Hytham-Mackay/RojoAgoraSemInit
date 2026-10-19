@@ -1,6 +1,3 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Network = require(ReplicatedStorage:WaitForChild("Network"))
-
 local Throw = {}
 
 function Throw:Execute(manager, player, chargeTime, target)
@@ -8,7 +5,7 @@ function Throw:Execute(manager, player, chargeTime, target)
 		return false
 	end
 	manager:ThrowSuccess(player, chargeTime, target)
-	return true  
+	return true
 end
 
 return Throw
