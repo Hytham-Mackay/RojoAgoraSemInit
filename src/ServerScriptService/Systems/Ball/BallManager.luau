@@ -206,8 +206,8 @@ function ballManager:ThrowRequest(player, chargeTime, target)
 end
 
 function ballManager:ThrowSuccess(player, chargeTime, target)
-	local MIN_THROW_SPEED = 10
-	local MAX_THROW_SPEED = 300
+	local MIN_THROW_SPEED = 20
+	local MAX_THROW_SPEED = 100
 	local MAX_CHARGE_TIME = 5
 
 	local direction = target - self.ball.Position
@@ -353,6 +353,20 @@ function ballManager:UpdateFlight(dt)
 		return
 	end
 
+	if self.Thrower then
+		local from = self.ball.Position
+		local to = from + displacement
+		for _, candidate in Players:GetPlayers() do
+			if
+				candidate ~= self.Thrower
+				and Network.InvokeBindable("ParryCheck", self.Thrower, candidate, from, to)
+				and self:ParryCatch(candidate)
+			then
+				return
+			end
+		end
+	end
+
 	local result =
 		workspace:Spherecast(self.ball.Position, self:GetBallRadius(), displacement, self.FlightRaycastParams)
 
@@ -371,7 +385,10 @@ function ballManager:OnFlightHit(result)
 	local target = model and Players:GetPlayerFromCharacter(model)
 
 	if target and self.Thrower and target ~= self.Thrower then
-		if Network.InvokeBindable("ParryCheck", self.Thrower, target) and self:ParryCatch(target) then
+		if
+			Network.InvokeBindable("ParryCheck", self.Thrower, target, self.ball.Position, result.Position)
+			and self:ParryCatch(target)
+		then
 			return -- agarrou: sem dano e sem ricochete
 		end
 

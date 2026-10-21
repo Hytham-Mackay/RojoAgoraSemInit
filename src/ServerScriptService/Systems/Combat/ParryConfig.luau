@@ -8,4 +8,6 @@ return table.freeze({
 	RECOVERY = 0.4, -- Custo da falha, continua lento
 	COOLDOWN = 5.0, -- Contado após o inicio do parry
 	LOCKED_WALKSPEED = 0.5, -- Velocidade de caminhada durante a animação de parry
+	CATCH_RANGE = 4, -- studs, distância máxima até a trajetória da bola
+	CATCH_HALF_ANGLE = 120, -- graus de cada lado da frente do jogador
 })

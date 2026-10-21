@@ -30,7 +30,11 @@ function ParryService.OnParryRequest(player: Player)
 	end
 
 	if not manager.FSM:Is("Normal") then
-		warn("[ParryService] Parry ignorado: estado atual é", tostring(manager.FSM.CurrentState), "(precisa estar em 'Normal')")
+		warn(
+			"[ParryService] Parry ignorado: estado atual é",
+			tostring(manager.FSM.CurrentState),
+			"(precisa estar em 'Normal')"
+		)
 		return
 	end
 
@@ -40,7 +44,11 @@ function ParryService.OnParryRequest(player: Player)
 	end
 
 	if not TeamManager.HasTeam(player) then
-		warn("[ParryService] Parry ignorado: " .. player.Name .. " ainda NÃO escolheu um time! (Pise na Part de seleção de time)")
+		warn(
+			"[ParryService] Parry ignorado: "
+				.. player.Name
+				.. " ainda NÃO escolheu um time! (Pise na Part de seleção de time)"
+		)
 		return
 	end
 
@@ -51,7 +59,12 @@ function ParryService.OnParryRequest(player: Player)
 
 	local now = workspace:GetServerTimeNow()
 	if now - manager.LastParry < ParryConfig.COOLDOWN then
-		warn(string.format("[ParryService] Parry em cooldown! Restam %.2fs", ParryConfig.COOLDOWN - (now - manager.LastParry)))
+		warn(
+			string.format(
+				"[ParryService] Parry em cooldown! Restam %.2fs",
+				ParryConfig.COOLDOWN - (now - manager.LastParry)
+			)
+		)
 		return
 	end
 
@@ -62,15 +75,47 @@ function ParryService.OnParryRequest(player: Player)
 	end
 end
 
--- Chamado de forma SÍNCRONA pelo BallManager (BindableFunction). Sem yield aqui.
+local function inCatchZone(target: Player, from: Vector3, to: Vector3): boolean
+	local root = target.Character and target.Character:FindFirstChild("HumanoidRootPart")
+	if not root then
+		return false
+	end
 
-function ParryService.CanParry(thrower: Player, target: Player): boolean
+	local origin = Vector3.new(root.Position.X, 0, root.Position.Z)
+	local a = Vector3.new(from.X, 0, from.Z)
+	local seg = Vector3.new(to.X, 0, to.Z) - a
+
+	local len2 = seg:Dot(seg)
+	local t = len2 > 0 and math.clamp((origin - a):Dot(seg) / len2, 0, 1) or 0
+	local offset = (a + seg * t) - origin
+	local dist = offset.Magnitude
+
+	if dist > ParryConfig.CATCH_RANGE then
+		return false
+	end
+	if dist < 0.01 then
+		return true
+	end
+
+	local look = root.CFrame.LookVector
+	look = Vector3.new(look.X, 0, look.Z).Unit
+	return look:Dot(offset / dist) >= math.cos(math.rad(ParryConfig.CATCH_HALF_ANGLE))
+end
+
+function ParryService.CanParry(thrower: Player, target: Player, from: Vector3?, to: Vector3?): boolean
 	local manager = PlayerService:GetPlayerManager(target)
 	if not manager or not manager.FSM:Is("ParryActive") then
 		return false
 	end
 
-	return TeamManager.AreEnemies(thrower, target) and isAlive(target) and not holdsBall(target)
+	if not (TeamManager.AreEnemies(thrower, target) and isAlive(target) and not holdsBall(target)) then
+		return false
+	end
+
+	if from and to then
+		return inCatchZone(target, from, to)
+	end
+	return true
 end
 
 function ParryService:Start()
