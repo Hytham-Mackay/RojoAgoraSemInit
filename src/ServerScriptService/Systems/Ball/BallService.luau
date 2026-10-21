@@ -7,9 +7,7 @@ local ballService = {}
 
 ballService.Managers = {}
 
-
 function ballService:Start()
-	
 	function ballService:GetManagerFromPlayer(player)
 		for _, manager in pairs(self.Managers) do
 			if manager.Holder == player then
@@ -21,21 +19,17 @@ function ballService:Start()
 	end
 
 	for _, ball in ipairs(workspace.Balls:GetChildren()) do
-
 		local manager = ballManager.new(ball)
 
 		self.Managers[ball] = manager
-
 	end
-
 
 	RunService.Heartbeat:Connect(function(dt)
 		for _, manager in pairs(self.Managers) do
 			manager:updateState(dt)
-
 		end
 	end)
-	
+
 	function ballService:GetClosestPlayer(position)
 		local closest = nil
 		local minDist = math.huge
@@ -56,7 +50,6 @@ function ballService:Start()
 	end
 
 	Network.SetValidator("ThrowRequest", function(player, chargeTime, target)
-
 		if typeof(chargeTime) ~= "number" then
 			return false, "chargeTime invalido"
 		end
@@ -69,19 +62,12 @@ function ballService:Start()
 			return false, "chargeTime negativo"
 		end
 
-		-- Tolerância de 1s acima do máximo para absorver latência de rede
-		if chargeTime > 6 then
-			return false, "chargeTime excessivo"
-		end
-
 		return true
 	end)
 
-
 	Network.OnServerEvent("ThrowRequest"):Connect(function(player, chargeTime, target)
-		
 		local manager = self:GetManagerFromPlayer(player)
-		
+
 		if not manager then
 			warn("[ballService] " .. player.Name .. " tentou arremessar sem segurar bola.")
 			return
@@ -90,11 +76,7 @@ function ballService:Start()
 		chargeTime = math.max(0, chargeTime)
 
 		manager:ThrowRequest(player, chargeTime, target)
-
 	end)
-	
-
 end
-
 
 return ballService

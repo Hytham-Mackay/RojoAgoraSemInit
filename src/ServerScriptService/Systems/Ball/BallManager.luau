@@ -14,6 +14,9 @@ local FLIGHT_HEIGHT = 2.5
 local BOUNDS_TAG = "ArenaBounds"
 local CENTER_TAG = "ArenaCenter"
 
+local FLOOR_Y = 0 -- Y fixo do chão (topo do piso). Ajuste para o valor real do seu mapa.
+local SPAWN_MARGIN = 0 -- folga extra (studs) para não nascer colada na borda da part
+
 local tagCache = {}
 local function getTagged(tag)
 	local cached = tagCache[tag]
@@ -309,6 +312,19 @@ function ballManager:IsOutOfBounds(position)
 	return math.abs(localPos.X) > half.X or math.abs(localPos.Y) > half.Y or math.abs(localPos.Z) > half.Z
 end
 
+-- Sorteia um ponto X/Z dentro da área da part, respeitando a rotação dela.
+-- O Y NÃO vem da part: é sempre o chão fixo + raio da bola.
+function ballManager:GetRandomSpawnPosition(area)
+	local margin = self:GetBallRadius() + SPAWN_MARGIN
+	local halfX = math.max(area.Size.X / 2 - margin, 0)
+	local halfZ = math.max(area.Size.Z / 2 - margin, 0)
+
+	local offset = Vector3.new((math.random() * 2 - 1) * halfX, 0, (math.random() * 2 - 1) * halfZ)
+
+	local worldPoint = area.CFrame:PointToWorldSpace(offset)
+	return Vector3.new(worldPoint.X, FLOOR_Y + self:GetBallRadius(), worldPoint.Z)
+end
+
 function ballManager:ResetToArena(reason)
 	if not self:IsInMotion() then
 		return false -- bola Held ou já Free nunca é resetada
@@ -327,9 +343,7 @@ function ballManager:ResetToArena(reason)
 	-- Garante que uma saída de emergência do voo também restaure o filtro.
 	self.FlightRaycastParams.FilterDescendantsInstances = { self.ball }
 
-	local groundY = self:GetGroundYAtPosition(center.Position)
-	local y = groundY and (groundY + self:GetBallRadius()) or center.Position.Y
-	self.ball.Position = Vector3.new(center.Position.X, y, center.Position.Z)
+	self.ball.Position = self:GetRandomSpawnPosition(center)
 
 	print("[ballManager] reset:", reason)
 	return self:SetState("Free")
