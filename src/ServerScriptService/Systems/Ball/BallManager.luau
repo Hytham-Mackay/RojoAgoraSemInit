@@ -211,7 +211,7 @@ end
 function ballManager:ThrowSuccess(player, chargeTime, target)
 	local MIN_THROW_SPEED = 20
 	local MAX_THROW_SPEED = 100
-	local MAX_CHARGE_TIME = 5
+	local MAX_CHARGE_TIME = 3
 
 	local direction = target - self.ball.Position
 	direction = Vector3.new(direction.X, 0, direction.Z)

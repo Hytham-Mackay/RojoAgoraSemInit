@@ -112,7 +112,8 @@ local function _getRemoteEvent(name: string): RemoteEvent
 						.. "Verifique se o servidor registrou esse evento antes do cliente tentar usá-lo.",
 					name,
 					CONFIG.WAIT_TIMEOUT
-				)
+				),
+				3
 			)
 		end
 
@@ -174,14 +175,14 @@ local function _getRemoteFunction(name: string): RemoteFunction
 	if IS_CLIENT then
 		DebugPrint("Cliente aguardando RemoteFunction", RealName)
 		local func = script:WaitForChild(RealName, CONFIG.WAIT_TIMEOUT)
-
 		if not func then
 			error(
 				string.format(
 					"[Network] Timeout: RemoteFunction '%s' não foi criado pelo servidor em %d segundos.",
 					name,
 					CONFIG.WAIT_TIMEOUT
-				)
+				),
+				3
 			)
 		end
 
