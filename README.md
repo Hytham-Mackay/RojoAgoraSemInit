@@ -1,1 +1,1 @@
-Bah, tamo potente
+Bah, tamo acabado
