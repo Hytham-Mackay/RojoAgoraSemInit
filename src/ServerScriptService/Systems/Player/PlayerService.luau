@@ -31,8 +31,9 @@ function PlayerService:AddPlayer(player)
 	self.Managers[player] = manager
 
 	local function onCharacter(character)
-		manager:Reset()
 		local humanoid = character:WaitForChild("Humanoid")
+		manager:Reset() -- aplica a velocidade base do manager
+
 		humanoid.Died:Connect(function()
 			manager:Reset()
 		end)
@@ -50,21 +51,6 @@ end
 
 function PlayerService:GetPlayerManager(player)
 	return self.Managers[player]
-end
-
-function PlayerService.SetupCharacter(player)
-	local character = player.Character
-	if not character then
-		return false
-	end
-
-	local humanoid = character:FindFirstChildOfClass("Humanoid")
-
-	if not humanoid or humanoid.Health <= 0 then
-		return false
-	end
-
-	return true
 end
 
 return PlayerService

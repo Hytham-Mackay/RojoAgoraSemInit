@@ -57,6 +57,9 @@
         "CharacterUseJumpPower": false,
         "SerializedOverrides": {
           "BinaryString": ""
+        },
+        "UseImprovedCharacterEvents": {
+          "Enum": 0
         }
       }
     },
@@ -79,6 +82,8 @@
         "MapTVRemoteToGamepadKeycodes": {
           "Enum": 0
         },
+        "PlayerCharacterDestroyBehavior": "Enabled",
+        "PlayerScriptsUseInputActionSystem": "Enabled",
         "PredictiveStreamingMode": {
           "Enum": 0
         },

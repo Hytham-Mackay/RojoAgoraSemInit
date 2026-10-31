@@ -49,33 +49,27 @@ function ballService:Start()
 		return closest
 	end
 
-	Network.SetValidator("ThrowRequest", function(player, chargeTime, target)
-		if typeof(chargeTime) ~= "number" then
-			return false, "chargeTime invalido"
-		end
-
+	Network.SetValidator("ThrowRequest", function(player, target)
 		if typeof(target) ~= "Vector3" then
 			return false, "target invalido"
 		end
 
-		if chargeTime < 0 then
-			return false, "chargeTime negativo"
+		-- NaN nunca é igual a si mesmo
+		if target.X ~= target.X or target.Y ~= target.Y or target.Z ~= target.Z then
+			return false, "target NaN"
 		end
 
 		return true
 	end)
 
-	Network.OnServerEvent("ThrowRequest"):Connect(function(player, chargeTime, target)
+	Network.OnServerEvent("ThrowRequest"):Connect(function(player, target)
 		local manager = self:GetManagerFromPlayer(player)
 
 		if not manager then
-			warn("[ballService] " .. player.Name .. " tentou arremessar sem segurar bola.")
-			return
+			return -- clique sem bola é normal agora, sem warn
 		end
 
-		chargeTime = math.max(0, chargeTime)
-
-		manager:ThrowRequest(player, chargeTime, target)
+		manager:ThrowRequest(player, target)
 	end)
 end
 

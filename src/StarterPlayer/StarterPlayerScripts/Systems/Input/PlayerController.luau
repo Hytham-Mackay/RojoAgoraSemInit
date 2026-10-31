@@ -9,8 +9,6 @@ local Actions = InputConfig.Actions
 
 local PlayerController = {}
 
-local chargeStart
-
 function PlayerController:Start()
 	InputController.Init(InputConfig)
 
@@ -19,24 +17,13 @@ function PlayerController:Start()
 	end)
 
 	InputController.OnPressed(Actions.Throw, function()
-		chargeStart = tick()
-	end)
-
-	InputController.OnReleased(Actions.Throw, function()
-		if not chargeStart then
-			return
-		end
-
-		local chargeTime = tick() - chargeStart
-		chargeStart = nil
-
 		local target = mouseSegment:GetTargetPosition()
 		if not target then
 			warn("[PlayerController] MouseHit é nil, arremesso cancelado.")
 			return
 		end
 
-		Network.FireServer("ThrowRequest", chargeTime, target)
+		Network.FireServer("ThrowRequest", target)
 	end)
 end
 

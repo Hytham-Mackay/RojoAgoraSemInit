@@ -204,15 +204,13 @@ function ballManager:CanThrow(player)
 	return self.Holder == player and self.FSM:Is("Held")
 end
 
-function ballManager:ThrowRequest(player, chargeTime, target)
-	return Throw:Execute(self, player, chargeTime, target)
+local THROW_SPEED = 100
+
+function ballManager:ThrowRequest(player, target)
+	return Throw:Execute(self, player, target)
 end
 
-function ballManager:ThrowSuccess(player, chargeTime, target)
-	local MIN_THROW_SPEED = 20
-	local MAX_THROW_SPEED = 100
-	local MAX_CHARGE_TIME = 3
-
+function ballManager:ThrowSuccess(player, target)
 	local direction = target - self.ball.Position
 	direction = Vector3.new(direction.X, 0, direction.Z)
 
@@ -222,9 +220,6 @@ function ballManager:ThrowSuccess(player, chargeTime, target)
 
 	direction = direction.Unit
 
-	local chargeAlpha = math.clamp(chargeTime / MAX_CHARGE_TIME, 0, 1)
-	local speed = MIN_THROW_SPEED + (MAX_THROW_SPEED - MIN_THROW_SPEED) * chargeAlpha
-
 	local flightY = self:GetFlightHeight(player)
 	if not flightY then
 		warn("Não foi possível encontrar o chão.")
@@ -232,7 +227,7 @@ function ballManager:ThrowSuccess(player, chargeTime, target)
 	end
 
 	self.Flight.Direction = direction
-	self.Flight.Speed = speed
+	self.Flight.Speed = THROW_SPEED
 	self.Flight.Y = flightY
 	self.Flight.Travelled = 0
 
@@ -260,7 +255,7 @@ function ballManager:ThrowSuccess(player, chargeTime, target)
 
 	self:SetState("Flying")
 
-	print("Bola lançada | Velocidade:", speed, "| Altura:", flightY)
+	print("Bola lançada | Velocidade:", THROW_SPEED, "| Altura:", flightY)
 	return true
 end
 
