@@ -24,6 +24,49 @@ function ballService:Start()
 		self.Managers[ball] = manager
 	end
 
+	function ballService:ReleaseFromPlayer(player, reason)
+		for _, manager in pairs(self.Managers) do
+			if manager.Holder == player then
+				manager:Release(reason)
+			end
+		end
+	end
+
+	-- Para o fim de rodada: chame ballService:ReleaseAll("RoundEnded") antes do reset
+	function ballService:ReleaseAll(reason)
+		for _, manager in pairs(self.Managers) do
+			manager:Release(reason)
+		end
+	end
+
+	local function hookPlayer(player)
+		local function onCharacter(character)
+			local humanoid = character:WaitForChild("Humanoid")
+			humanoid.Died:Connect(function()
+				self:ReleaseFromPlayer(player, "HolderDied")
+			end)
+		end
+
+		player.CharacterAdded:Connect(onCharacter)
+		if player.Character then
+			task.spawn(onCharacter, player.Character)
+		end
+
+		-- dispara antes de o personagem ser destruído
+		player.CharacterRemoving:Connect(function()
+			self:ReleaseFromPlayer(player, "CharacterRemoving")
+		end)
+	end
+
+	for _, player in ipairs(game.Players:GetPlayers()) do
+		hookPlayer(player)
+	end
+	game.Players.PlayerAdded:Connect(hookPlayer)
+
+	game.Players.PlayerRemoving:Connect(function(player)
+		self:ReleaseFromPlayer(player, "HolderLeft")
+	end)
+
 	RunService.Heartbeat:Connect(function(dt)
 		for _, manager in pairs(self.Managers) do
 			manager:updateState(dt)

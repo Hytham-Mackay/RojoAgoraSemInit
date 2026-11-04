@@ -67,7 +67,7 @@ function ballManager.new(ball)
 		},
 		{
 			Name = "Falling",
-			From = { "Flying" },
+			From = { "Flying", "Held" },
 			Update = function(dt)
 				self:UpdateFalling(dt)
 			end,
@@ -166,6 +166,33 @@ function ballManager:AttachToHolder(player)
 	weld.Parent = self.ball
 	self.weld = weld
 
+	return true
+end
+
+-- Encerra a posse da bola. A bola cai onde está (não volta para a arena).
+-- Seguro de chamar várias vezes: se não estiver em Held, não faz nada.
+function ballManager:Release(reason)
+	if not self.FSM:Is("Held") then
+		return false
+	end
+
+	-- Guarda a posição antes de soltar, para a bola não cair pela física do Roblox
+	local position = self.ball.Position
+
+	if self.weld then
+		self.weld:Destroy()
+		self.weld = nil
+	end
+
+	self.ball.Anchored = true
+	self.ball.Position = position
+	self.Holder = nil
+	self.FlightRaycastParams.FilterDescendantsInstances = { self.ball }
+
+	print("[ballManager] Release:", reason)
+
+	-- Cai e rola pelo fluxo normal (Falling -> Rolling -> Free)
+	self:StartFalling(Vector3.zero)
 	return true
 end
 
