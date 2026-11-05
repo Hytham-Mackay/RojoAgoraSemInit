@@ -3,7 +3,7 @@ local Network = require(ReplicatedStorage:WaitForChild("Network"))
 local Players = game:GetService("Players")
 local TeamManager = require(script.Parent.Parent.Team.TeamManager)
 
-DamageService = {}
+local DamageService = {}
 
 local DAMAGE = 20
 

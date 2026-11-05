@@ -5,15 +5,25 @@ local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Network = require(ReplicatedStorage:WaitForChild("Network"))
 local Players = game:GetService("Players")
-local PlayerService = game:GetService("Players")
+local PlayerService = require(script.Parent.Parent.Player.PlayerService)
 local TeamManager = require(script.Parent.Parent.Team.TeamManager)
-local player = Players.LocalPlayer
+local BallConfig = require(script.Parent.BallConfig)
 
+local function debugPrint(...)
+	if BallConfig.DEBUG then
+		print("[ballManager]", ...)
+	end
+end
 local ballManager = {}
 ballManager.__index = ballManager
 
-local FLIGHT_HEIGHT = 2.5
-local PICKUP_RANGE = 8
+local FLIGHT_HEIGHT = BallConfig.FLIGHT_HEIGHT
+local PICKUP_RANGE = BallConfig.PICKUP_RANGE
+local THROW_SPEED = BallConfig.THROW_SPEED
+local FLOOR_Y = BallConfig.FLOOR_Y
+local SPAWN_MARGIN = BallConfig.SPAWN_MARGIN
+local BOUNDS_TAG = BallConfig.BOUNDS_TAG
+local CENTER_TAG = BallConfig.CENTER_TAG
 
 local allManagers = {}
 
@@ -33,12 +43,6 @@ local function isAlive(player: Player?): boolean
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 	return humanoid ~= nil and humanoid.Health > 0
 end
-
-local BOUNDS_TAG = "ArenaBounds"
-local CENTER_TAG = "ArenaCenter"
-
-local FLOOR_Y = 0 -- Y fixo do chão (topo do piso). Ajuste para o valor real do seu mapa.
-local SPAWN_MARGIN = 0 -- folga extra (studs) para não nascer colada na borda da part
 
 local tagCache = {}
 local function getTagged(tag)
@@ -79,11 +83,29 @@ function ballManager.new(ball)
 			Started = function()
 				self.Roll = nil
 				self.Fall = nil
+
+				self.ball.CanCollide = false
+				self.ball.CanTouch = false
+				self.ball.CanQuery = false
+				self.ball.Massless = true
+			end,
+
+			Exited = function()
+				-- o weld já foi destruído por ThrowSuccess / Release
+				for property, value in self.DefaultPhysics do
+					self.ball[property] = value
+				end
 			end,
 		},
 		{
 			Name = "Flying",
 			From = { "Held" },
+			Started = function()
+				self:SetFlightFilter(self.Thrower and self.Thrower.Character)
+			end,
+			Exited = function()
+				self:SetFlightFilter()
+			end,
 			Update = function(dt)
 				self:UpdateFlight(dt)
 			end,
@@ -132,7 +154,16 @@ function ballManager.new(ball)
 		Gravity = 45, -- cai devagar
 		BounceDamping = 0.90, -- QUICA ALTO (antes 0.82)
 		GroundFriction = 0.965, -- desliza bastante
-		AirResistance = 0.998,
+		AirResistance = 0.89,
+	}
+
+	ball.CanCollide = false
+
+	self.DefaultPhysics = {
+		CanCollide = ball.CanCollide,
+		CanTouch = ball.CanTouch,
+		CanQuery = ball.CanQuery,
+		Massless = ball.Massless,
 	}
 
 	self.Fall = nil
@@ -160,7 +191,7 @@ function ballManager:ConnectEvents()
 	end)
 end
 
-function ballManager:CanPickup()
+function ballManager:CanPickup(player)
 	local catchable = self.FSM:Is("Free")
 		or self.FSM:Is("Rolling")
 		or (self.FSM:Is("Falling") and self.Fall ~= nil and self.Fall.Grounded == true)
@@ -168,7 +199,7 @@ function ballManager:CanPickup()
 		return false, "BallNotCatchable"
 	end
 
-	if typeof(player) == "Instance" and player:IsA("Player") then
+	if typeof(player) ~= "Instance" or not player:IsA("Player") then
 		return false, "InvalidPlayer"
 	end
 
@@ -261,7 +292,7 @@ function ballManager:PickupSuccess(player)
 		return false
 	end
 
-	print("O jogador " .. player.Name .. " pegou a bola")
+	debugPrint("O jogador " .. player.Name .. " pegou a bola")
 
 	Network.FireBindable("BallPickedUp", player)
 	return true
@@ -290,8 +321,6 @@ end
 function ballManager:CanThrow(player)
 	return self.Holder == player and self.FSM:Is("Held")
 end
-
-local THROW_SPEED = 100
 
 function ballManager:ThrowRequest(player, target)
 	return Throw:Execute(self, player, target)
@@ -444,7 +473,7 @@ function ballManager:UpdateFlight(dt)
 	local displacement = direction * speed * dt
 
 	self.Flight.Travelled = self.Flight.Travelled + displacement.Magnitude
-	if self.Flight.Travelled > 2000 then
+	if self.Flight.Travelled > BallConfig.MAX_FLIGHT_DISTANCE then
 		self:ResetToArena("max_distance")
 		return
 	end
@@ -519,6 +548,14 @@ function ballManager:ClearFlight()
 	self.Flight.Travelled = 0
 end
 
+function ballManager:SetFlightFilter(extra: Instance?)
+	if extra then
+		self.FlightRaycastParams.FilterDescendantsInstances = { self.ball, extra }
+	else
+		self.FlightRaycastParams.FilterDescendantsInstances = { self.ball }
+	end
+end
+
 function ballManager:StartFalling(horizontalVelocity)
 	self.FlightRaycastParams.FilterDescendantsInstances = { self.ball }
 
@@ -546,7 +583,7 @@ function ballManager:UpdateFalling(dt)
 	fall.VerticalVelocity -= fall.Gravity * dt
 
 	-- Resistência no ar mínima
-	fall.HorizontalVelocity *= fall.AirResistance
+	fall.HorizontalVelocity *= fall.AirResistance ^ dt
 
 	local velocity = Vector3.new(fall.HorizontalVelocity.X, fall.VerticalVelocity, fall.HorizontalVelocity.Z)
 
@@ -578,7 +615,7 @@ function ballManager:UpdateFalling(dt)
 			fall.VerticalVelocity = math.abs(fall.VerticalVelocity) * fall.BounceDamping
 			fall.HorizontalVelocity *= fall.GroundFriction
 
-			print("[ballManager] QUICOU! VY:", fall.VerticalVelocity, "| HY:", fall.HorizontalVelocity.Magnitude)
+			debugPrint("QUICOU! VY:", fall.VerticalVelocity, "| HY:", fall.HorizontalVelocity.Magnitude)
 
 			if math.abs(fall.VerticalVelocity) < 3 then
 				fall.VerticalVelocity = 0
@@ -625,7 +662,7 @@ function ballManager:UpdateFalling(dt)
 	fall.Position = nextPosition
 	self.ball.Position = nextPosition
 
-	if nextPosition.Y < -500 then
+	if nextPosition.Y < BallConfig.VOID_Y then
 		self:ResetToArena("void")
 	end
 end
@@ -635,7 +672,7 @@ end
 function ballManager:StartRolling(horizontalVelocity)
 	self.Roll = {
 		Velocity = horizontalVelocity,
-		Friction = 0.97,
+		Friction = 0.16,
 		StopThreshold = 5,
 	}
 
@@ -649,7 +686,7 @@ function ballManager:UpdateRolling(dt)
 		return
 	end
 
-	roll.Velocity *= roll.Friction
+	roll.Velocity *= roll.Friction ^ dt
 
 	local displacement = Vector3.new(roll.Velocity.X * dt, 0, roll.Velocity.Z * dt)
 
