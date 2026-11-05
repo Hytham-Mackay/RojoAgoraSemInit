@@ -1,13 +1,12 @@
 local Pickup = {}
+
 function Pickup:Execute(manager, player)
-	
-	if not manager:CanPickup(player) then
-		return false
+	local ok, reason = manager:CanPickup(player)
+	if not ok then
+		return false, reason
 	end
-	
-	manager:PickupSuccess(player)
-	
-	return true
+
+	return manager:PickupSuccess(player)
 end
 
 return Pickup

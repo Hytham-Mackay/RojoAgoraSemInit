@@ -5,11 +5,34 @@ local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Network = require(ReplicatedStorage:WaitForChild("Network"))
 local Players = game:GetService("Players")
+local PlayerService = game:GetService("Players")
+local TeamManager = require(script.Parent.Parent.Team.TeamManager)
+local player = Players.LocalPlayer
 
 local ballManager = {}
 ballManager.__index = ballManager
 
 local FLIGHT_HEIGHT = 2.5
+local PICKUP_RANGE = 8
+
+local allManagers = {}
+
+-- Para ler holder sem precisar sincronizar tabela
+
+function ballManager.GetHeldBy(player)
+	for _, manager in allManagers do
+		if manager.Holder == player then
+			return manager
+		end
+	end
+	return nil
+end
+
+local function isAlive(player: Player?): boolean
+	local character = player and player.Character
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	return humanoid ~= nil and humanoid.Health > 0
+end
 
 local BOUNDS_TAG = "ArenaBounds"
 local CENTER_TAG = "ArenaCenter"
@@ -122,23 +145,56 @@ function ballManager.new(ball)
 	self.HeightRaycastParams = RaycastParams.new()
 	self.HeightRaycastParams.FilterType = Enum.RaycastFilterType.Exclude
 
+	allManagers[ball] = self
+
 	self:ConnectEvents()
 	return self
 end
 
 function ballManager:ConnectEvents()
 	self.ball.ProximityPrompt.Triggered:Connect(function(player)
-		print(player.Name .. " tentou pegar a bola | estado:", self.FSM.CurrentState, "| CanPickup:", self:CanPickup())
-		print(player.Name .. " tentou pegar a bola")
-		self:Pickup(player)
+		local ok, reason = self:Pickup(player)
+		if not ok then
+			print(player.Name .. " não pegou a bola:", reason, "/ estado:", self.FSM.CurrentState)
+		end
 	end)
 end
 
 function ballManager:CanPickup()
-	if self.FSM:Is("Free") or self.FSM:Is("Rolling") then
-		return true
+	local catchable = self.FSM:Is("Free")
+		or self.FSM:Is("Rolling")
+		or (self.FSM:Is("Falling") and self.Fall ~= nil and self.Fall.Grounded == true)
+	if not catchable then
+		return false, "BallNotCatchable"
 	end
-	return self.FSM:Is("Falling") and self.Fall ~= nil and self.Fall.Grounded == true
+
+	if typeof(player) == "Instance" and player:IsA("Player") then
+		return false, "InvalidPlayer"
+	end
+
+	if not isAlive(player) then
+		return false, "Dead"
+	end
+
+	if not TeamManager.HasTeam(player) then
+		return false, "NoTeam"
+	end
+
+	local playerManager = PlayerService:GetPlayerManager(player)
+	if not playerManager or not playerManager.FSM:Is("Normal") then
+		return false, "NotNormalState"
+	end
+
+	if ballManager.GetHeldBy(player) then
+		return false, "AlreadyHeld"
+	end
+
+	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+	if not root or (root.Position - self.ball.Position).Magnitude > PICKUP_RANGE then
+		return false, "TooFar"
+	end
+
+	return true
 end
 
 function ballManager:Pickup(player)
@@ -146,6 +202,10 @@ function ballManager:Pickup(player)
 end
 
 function ballManager:AttachToHolder(player)
+	if ballManager.GetHeldBy(player) then
+		return false -- um jogador nunca segura duas bolas, hahahaha que delicia
+	end
+
 	local character = player.Character
 	local hand = character and character:FindFirstChild("RightHand")
 	if not hand then
